@@ -8,9 +8,10 @@ from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, ContactForm
 import os
 from dotenv import load_dotenv, find_dotenv
+import smtplib
 
 '''
 Make sure the required packages are installed: 
@@ -29,6 +30,9 @@ This will install the packages from the requirements.txt for this project.
 dotenv_path = find_dotenv()
 # Load .env file entries as environment variables
 load_dotenv()
+
+OWN_EMAIL = os.environ.get("G_MAIL")
+OWN_PASSWORD = os.environ.get("GMAIL_PASSW")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
@@ -251,10 +255,20 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html")
+    form = ContactForm()
+    if form.validate_on_submit():
+        message = (f"Subject:New To's Blog Message\n\nName: {form.name.data}\nEmail: {form.email.data}\n"
+                   f"Phone: {form.phone.data}\nMessage: {form.message.data}")
+        with smtplib.SMTP("smtp.gmail.com") as connection:
+            connection.starttls()
+            connection.login(OWN_EMAIL, OWN_PASSWORD)
+            connection.sendmail(OWN_EMAIL, "tomasnavarro@upc.edu.ar", message)
+        flash("Message Successfully Sent")
+        return redirect(url_for("contact"))
+    return render_template("contact.html", form=form)
 
 
 if __name__ == "__main__":
-    app.run(debug=False, port=5002)
+    app.run(debug=True, port=5002)

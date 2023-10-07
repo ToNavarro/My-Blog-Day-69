@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, TextAreaField
 from wtforms.validators import DataRequired, URL, Email, Length
 from flask_ckeditor import CKEditorField
 
@@ -27,5 +27,18 @@ class LoginForm(FlaskForm):
 
 
 class CommentForm(FlaskForm):
-    comment = CKEditorField("Comment", validators=[DataRequired("Required Field.")])
+    comment = CKEditorField("Comment", validators=[DataRequired("Required Field.")],
+                            render_kw={"placeholder": "Say something about this!"})
     submit = SubmitField("SUBMIT COMMENT")
+
+
+class ContactForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired("Required Field.")],
+                       render_kw={"placeholder": "Full Name"})
+    email = StringField("Email", validators=[DataRequired("Required Field."), Email("Not a valid email.")],
+                        render_kw={"placeholder": "Valid Email"})
+    phone = StringField("Phone Number", validators=[DataRequired("Required Field.")],
+                        render_kw={"placeholder": "Starting with country code"})
+    message = TextAreaField(label="Message", validators=[DataRequired("Required Field.")],
+                            render_kw={"placeholder": "What do you want to tell me?"})
+    submit = SubmitField("Send Message")
